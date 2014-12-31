@@ -6,19 +6,17 @@ USERNAME  = ""
 #This is the bot's Username. In order to send mail, he must have some amount of Karma.
 PASSWORD  = ""
 #This is the bot's Password. 
-USERAGENT = ""
-#This is a short description of what the bot does. For example "/u/GoldenSights' Newsletter bot"
-SUBREDDIT = "GoldTesting"
+USERAGENT = "WouldReadAgainBot by /u/TheMadBotter"
+#This is a shall"
+SUBREDDIT = "all"
 #This is the sub or list of subs to scan for new posts. For a single sub, use "sub1". For multiple subreddits, use "sub1+sub2+sub3+..."
-PARENTSTRING = ["phrase 1", "phrase 2", "phrase 3", "phrase 4"]
+PARENTSTRING = ["would read again"]
 #These are the words you are looking for
-REPLYSTRING = "Hi hungry, I'm dad"
-#This is the word you want to put in reply
-MAXPOSTS = 100
+MAXPOSTS = 1000
 #This is how many posts you want to retrieve all at once. PRAW can download 100 at a time.
-WAIT = 20
+WAIT = 60
 #This is how many seconds you will wait between cycles. The bot is completely inactive during this time.
-
+lastpost = ""
 
 print "Starting WouldReadAgainBot"
 print "Loading libraries"
@@ -29,21 +27,28 @@ import time
 
 print "Logging in"
 r = praw.Reddit(USERAGENT)
-r.login(USERNAME, PASSWORD) 
+#r.login(USERNAME, PASSWORD) 
 print "Done!"
+
 
 def scanSub():
     print "Searching "+ SUBREDDIT
     subreddit = r.get_subreddit(SUBREDDIT)
     posts = subreddit.get_comments(limit=MAXPOSTS)
-    firstpost = null
+    firstpost = None
+    global lastpost
     for post in posts:
         pid = post.id
-        if firstpost == null: firstpost = pid
-        if pid == lastpost: break
+        if firstpost == None:
+		firstpost = pid
+		print "firstpost = "+pid
+        if pid == lastpost:
+		print "break"
+		break
         try:
             pauthor = post.author.name #will throw an error if comment is deleted, so that we can ignore the post
             pbody = post.body.lower()
+	    print pid
             if any(key.lower() in pbody for key in PARENTSTRING):
                 if pauthor.lower() != USERNAME.lower():
                     print('Replying to ' + pid + ' by ' + pauthor)
@@ -58,10 +63,10 @@ def scanSub():
                     print "Will not reply to self"
         except AttributeError:
             #Author is deleted. We don't care about this
+	    print "exception"
             pass
     lastpost = firstpost
 
-lastpost = null
 while True:
     try:
         scanSub()
